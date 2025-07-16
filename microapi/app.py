@@ -67,8 +67,6 @@ class App:
         request = HTTPRequest.from_bytes(request_raw)
         for (route_verb, path_pattern), handler in self.routes.items():
             if request.verb == route_verb and re.fullmatch(path_pattern, request.path):
-                for middleware in self.middleware_stack:
-                    request = middleware(request, handler)
                 return handler.__call__(request).to_bytes()
         # If no route matches, return 404 Not Found
         return HTTPResponse(status_code=HTTP_404).to_bytes()
