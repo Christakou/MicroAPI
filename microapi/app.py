@@ -3,20 +3,9 @@ from collections.abc import Callable
 import threading
 import re
 from typing import Dict
-
+from concurrent.futures import ThreadPoolExecutor
 from microapi.middleware import MiddleWare, RouteHandler, BaseMiddleWare
 from microapi.models import HTTP_404, HTTPRequest, HTTPResponse
-
-
-class OtherMiddleware(MiddleWare):
-    def __call__(self, request: HTTPRequest, call_next: Callable[[HTTPRequest], HTTPResponse]) -> HTTPResponse:
-        """
-        Base middleware that can be extended to add custom functionality.
-        """
-        # Call the next handler in the middleware chain
-        response = call_next(request)
-        print("Other middleware processing request:", request.path)
-        return response
 
 
 class App:
@@ -25,6 +14,7 @@ class App:
         self.port = port
         self.routes: Dict[str, RouteHandler] = {}
         self.middleware_stack: list[MiddleWare] = [BaseMiddleWare()]
+        self.thread_pool: ThreadPoolExecutor =  ThreadPoolExecutor(max_workers=3)
 
     def register_middleware(self, middleware: MiddleWare):
         """
@@ -39,7 +29,8 @@ class App:
             while True:
                 client_socket, addr = server_socket.accept()
                 print(f"Connection from {addr}")
-                threading.Thread(target=self.handle_client, args=[client_socket]).start()
+                self.thread_pool.submit(self.handle_client, client_socket)
+
         except KeyboardInterrupt:
             print("Server stopped.")
         finally:
