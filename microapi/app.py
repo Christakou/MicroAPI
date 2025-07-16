@@ -1,6 +1,4 @@
-import socket  # noqa: F401
-from collections.abc import Callable
-import threading
+import socket
 import re
 from typing import Dict
 from concurrent.futures import ThreadPoolExecutor
@@ -16,13 +14,13 @@ class App:
         self.middleware_stack: list[MiddleWare] = [BaseMiddleWare()]
         self.thread_pool: ThreadPoolExecutor =  ThreadPoolExecutor(max_workers=3)
 
-    def register_middleware(self, middleware: MiddleWare):
+    def register_middleware(self, middleware: MiddleWare) -> None:
         """
         Register a middleware with the app.
         """
         self.middleware_stack.append(middleware)
 
-    def start(self):
+    def start(self) -> None:
         server_socket = socket.create_server((self.host, self.port), reuse_port=True)
         print(f"Server started at http://{self.host}:{self.port}")
         try:
@@ -37,14 +35,14 @@ class App:
             server_socket.close()
         return server_socket
 
-    def add_route(self, method: str, path_pattern: str, handler: RouteHandler):
+    def add_route(self, method: str, path_pattern: str, handler: RouteHandler) -> None:
         """
         Register a route with the app.
         """
         self.routes[(method, path_pattern)] = handler
 
 
-    def handle_client(self, client_socket: socket.socket):
+    def handle_client(self, client_socket: socket.socket) -> None:
         request = client_socket.recv(1024)
         if not request:
             client_socket.close()
